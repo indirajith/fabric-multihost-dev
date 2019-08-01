@@ -1,0 +1,62 @@
+version: '2'
+
+networks:
+   fabric-host1:
+
+services:
+   ca-tls: 
+      container_name: ca-tls.inuit.local
+      image: hyperledger/fabric-ca
+      command: sh -c 'fabric-ca-server start -d -b tls-ca-admin:tls-ca-adminpw --port 7052'
+      environment:
+         - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-tls-ca/crypto
+         - FABRIC_CA_SERVER_TLS_ENABLED=true
+         - FABRIC_CA_NAME=ca-tls.inuit.local
+         - FABRIC_CA_CSR_CN=ca-tls.inuit.local
+         - FARIC_CA_SERVER_CSR_HOSTS=ca-tls.inuit.local
+         - FABRIC_CA_SERVER_DEBUG=true
+      volumes:
+         - /etc/hyperledger/fabric-tls-ca:/etc/hyperledger/fabric-tls-ca
+         - /etc/hyperledger/fabric-ca-client-home:/etc/hyperledger/fabric-ca-client-home
+      networks:
+         - fabric-host1
+      ports:
+         - 7052:7052
+
+   rca-org0:
+      container_name: rca-org0.inuit.local
+      image: hyperledger/fabric-ca
+      command: sh -c 'fabric-ca-server start -d -b rca-org0-admin:rca-org0-adminpw --port 7053'
+      environment:
+         - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-org0-rca/crypto
+         - FABRIC_CA_SERVER_TLS_ENABLED=true
+         - FABRIC_CA_NAME=rca-org0.inuit.local
+         - FABRIC_CA_CSR_CA=rca-org0.inuit.local
+         - FABRIC_CA_CSR_HOSTS=rca-org0.inuit.local
+         - FABRIC_CA_SERVER_DEBUG=true
+      volumes:
+         - /etc/hyperledger/faric-org0-rca:/etc/hyperledger/fabric-org0-rca
+         - /etc/hyperledger/fabric-tlsca-clnthmo0:/etc/hyperledger/fabric-tlsca-clnthmo0
+      networks:
+         - fabric-host1
+      ports:
+         - 7053:7053
+
+   rca-org1:
+      container_name: rca-org1.inuit.local
+      image: hyperledger/fabric-ca
+      command: sh -c 'fabric-ca-server start -d -b rca-org1-admin:rca-org1-adminpw --port 7054'
+      environment:
+         - FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-org1-rca/crypto
+         - FABRIC_CA_SERVER_TLS_ENABLED=true
+         - FABRIC_CA_NAME=rca-org1.inuit.local
+         - FABRIC_CA_CSR_CA=rca-org1.inuit.local
+         - FABRIC_CA_CSR_HOSTS=rca-org1.inuit.local
+         - FABRIC_CA_SERVER_DEBUG=true
+      volumes:
+         - /etc/hyperledger/fabric-org1-rca:/etc/hyperledger/fabric-org1-rca
+         - /etc/hyperledger/fabric-tlsca-clnthmo1:/etc/hyperledger/fabric-tlsca-clnthmo1
+      networks:
+         - fabric-host1
+      ports:
+         - 7054:7054
