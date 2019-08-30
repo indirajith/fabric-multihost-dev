@@ -1,0 +1,97 @@
+version: '2'
+
+networks:
+   fabric-host2:
+
+services:
+   peer1-org1:
+      container_name: peer1-org1.inuit.local
+      image: hyperledger/fabric-peer
+      environment:
+         - CORE_PEER_ID=peer1-org1.inuit.local
+         - CORE_PEER_ADDRESS=peer1-org1.inuit.local:7051
+         - CORE_PEER_LOCALMSPID=org1MSP
+         - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org1/peer1/msp
+         - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+         - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=guide_fabric-host2
+         - FABRIC_LOGGING_SPEC=debug
+         - CORE_PEER_TLS_ENABLED=true
+         - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/org1/peer1/tls-msp/signcerts/cert.pem
+         - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/org1/peer1/tls-msp/keystore/p1o1-msp-key.pem
+         - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+         - OORE_PEER_GOSSIP_USELEADERELECTION=true
+         - CORE_PEER_GOSSIP_ORGLEADER=false
+         - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-org1.inuit.local:7051
+         - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+         - GODEBUG=netdns=go
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org1/peer1
+      volumes:
+         - /var/run:/host/var/run
+         - /tmp/hyperledger/org1/peer1:/tmp/hyperledger/org1/peer1
+      extra_hosts:
+         - "peer2-org1.inuit.local:192.168.176.104"
+         - "peer2-org2.inuit.local:192.168.176.104"
+         - "peer1-org2.inuit.local:192.168.176.105"
+      networks:
+         - fabric-host2
+      ports:
+         - 7051:7051
+         - 7053:7053
+
+   orderer1-org0:
+      container_name: ord1-org0.inuit.local
+      image: hyperledger/fabric-orderer
+      environment:
+         - ORDERER_HOME=/tmp/hyperledger/orderer
+         - ORDERER_HOST=ord1-org0.inuit.local
+         - ORDERER_GENERAL_LISTENADDRESS=ord1-org0.inuit.local
+         - ORDERER_GENERAL_GENESISMETHOD=file
+         - ORDERER_GENERAL_GENESISFILE=/tmp/hyperledger/org0/orderer/genesis.block
+         - ORDERER_GENERAL_LOCALMSPID=org0MSP
+         - ORDERER_GENERAL_LOCALMSPDIR=/tmp/hyperledger/org0/orderer/msp
+         - ORDERER_GENERAL_TLS_ENABLED=true
+         - ORDERER_GENERAL_TLS_CERTIFICATE=/tmp/hyperledger/org0/orderer/tls-msp/signcerts/cert.pem
+         - ORDERER_GENERAL_TLS_PRIVATEKEY=/tmp/hyperledger/org0/orderer/tls-msp/keystore/key.pem
+         - ORDERER_GENERAL_TLS_ROOTCAS=/tmp/hyperledger/org0/orderer/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+         - ORDERER_GENERAL_LOGLEVEL=debug
+         - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+         - GODEBUG=netdns=go
+      volumes:
+         - /tmp/hyperledger/org0/orderer:/tmp/hyperledger/org0/orderer/
+      extra_hosts:
+         - "peer2-org1.inuit.local:192.168.176.104"
+         - "peer2-org2.inuit.local:192.168.176.104"
+         - "peer1-org2.inuit.local:192.168.176.105"
+      networks:
+         - fabric-host2
+      ports:
+         - 7050:7050
+
+   cli-org1:
+      container_name: cli-org1.inuit.local
+      image: hyperledger/fabric-tools
+      tty: true
+      stdin_open: true
+      environment:
+         - GOPATH=/opt/gopath
+         - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+         - FABRIC_LOGGING_SPEC=DEBUG
+         - CORE_PEER_ID=cli-org1.inuit.local
+         - CORE_PEER_ADDRESS=peer1-org1.inuit.local:7051
+         - CORE_PEER_LOCALMSPID=org1MSP
+         - CORE_PEER_TLS_ENABLED=true
+         - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/org1/peer1/tls-msp/tlscacerts/tls-ca-tls-inuit-local-7052.pem
+         - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/org1/peer1/msp
+         - GODEBUG=netdns=go
+      working_dir: /opt/gopath/src/github.com/hyperledger/fabric/org1
+      command: sh
+      volumes:
+         - /tmp/hyperledger/org1/peer1:/tmp/hyperledger/org1/peer1
+         - /tmp/hyperledger/org1/peer1/assets/chaincode:/opt/gopath/src/github.com/hyperledger/fabric-samples/chaincode/
+         - /tmp/hyperledger/org1/admin:/tmp/hyperledger/org1/admin
+      extra_hosts:
+         - "peer2-org1.inuit.local:192.168.176.104"
+         - "peer2-org2.inuit.local:192.168.176.104"
+         - "peer1-org2.inuit.local:192.168.176.105"
+      networks:
+         - fabric-host2
